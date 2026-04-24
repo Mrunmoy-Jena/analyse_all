@@ -1,0 +1,13 @@
+# Ignore compiled object files and root files
+*.o
+*.root
+
+# Ignore build, combined_rootfiles and binary directories
+/build/
+/bin/
+/combined_rootfiles/
+# Editor/temp files
+*~
+*.swp
+.vscode/
+.DS_Store
