@@ -285,6 +285,15 @@ void run_analysis(TString inputFile, TFile* outputFile)
     auto h2_vertex_YZ = CreateHistograms<TH2F>("h2_vertex_YZ", 1, 1000,-500,500,1000,-500,500);
     auto h1_DCA = CreateHistograms<TH1F>("h1_DCA", 1, 1000,0,10);
     auto h1_vertex_Z = CreateHistograms<TH1F>("h1_vertex_Z", 1, 1000,-500,500);
+
+    // Beam angular divergence: projected angles of the fragment momentum in x-z and y-z planes.
+    // Fill for all 25F-gated events so that projecting onto each axis gives the
+    // sigma_x and sigma_y inputs for SetBeamAngularDivergence() in the CALIFA simulation.
+    auto h2_frag_beam_divergence = CreateHistograms<TH2F>("h2_frag_beam_divergence", 1,
+                                                          500, -50., 50.,   // theta_x [mrad]
+                                                          500, -50., 50.);  // theta_y [mrad]
+    h2_frag_beam_divergence[0]->GetXaxis()->SetTitle("#theta_{x} = atan(p_{x}/p_{z}) [mrad]");
+    h2_frag_beam_divergence[0]->GetYaxis()->SetTitle("#theta_{y} = atan(p_{y}/p_{z}) [mrad]");
     
     // Set branch addresses
     R3BEventHeader* header = nullptr;
@@ -480,6 +489,16 @@ void run_analysis(TString inputFile, TFile* outputFile)
          // Cut for incoming 25F
         bool is25F = (frs_AoZ > 2.765 && frs_AoZ < 2.79) && (frs_Z > 8 && frs_Z < 10.3); //correct cut !
 
+        // Beam angular divergence: for 25F events fill the projected fragment angles.
+        // out_track_mom is the MDF-reconstructed fragment momentum (TVector3).
+        // atan2(px, pz) and atan2(py, pz) give the projected angles in the x-z and y-z planes.
+        if(is25F && out_track_mom.Z() != 0.)
+        {
+            const double theta_x_mrad = 1000. * std::atan2(out_track_mom.X(), out_track_mom.Z());
+            const double theta_y_mrad = 1000. * std::atan2(out_track_mom.Y(), out_track_mom.Z());
+            h2_frag_beam_divergence[0]->Fill(theta_x_mrad, theta_y_mrad);
+        }
+
         for(int j = 0; j < califa_data->GetEntriesFast(); ++j)
         {
             auto califa_item = dynamic_cast<R3BCalifaClusterData*>(califa_data->At(j));
@@ -535,7 +554,14 @@ void run_analysis(TString inputFile, TFile* outputFile)
             califa_theta_g[ig] = g->GetTheta()*TMath::RadToDeg();
             califa_phi_g[ig] = g->GetPhi()*TMath::RadToDeg();
             califa_time_g[ig] = g->GetTime();
-            califa_e_g_corr.push_back(DopplerCorrectGammaEnergy(califa_e_g[ig], g->GetTheta(), frag_beta));
+            // Compute the angle between the gamma direction and the actual fragment
+            // momentum direction (out_track_mom_unit) from the MDF track.
+            // This replaces g->GetTheta() which was the crystal angle from the z-axis,
+            // ignoring the real beam tilt event-by-event.
+            TVector3 gamma_dir;
+            gamma_dir.SetMagThetaPhi(1.0, g->GetTheta(), g->GetPhi());
+            const double theta_frag_gamma = gamma_dir.Angle(out_track_mom_unit); // [rad]
+            califa_e_g_corr.push_back(DopplerCorrectGammaEnergy(califa_e_g[ig], theta_frag_gamma, frag_beta));
         }
 	
 	int it_1 = (gRandom->Uniform(-1,1) > 0) ? 1 : 0;
@@ -993,6 +1019,7 @@ void run_analysis(TString inputFile, TFile* outputFile)
     appendVector(all_hists, h2_gamma_phipair_Mleq5_25F_p2p_22O);
     appendVector(all_hists, h1_DCA);
     appendVector(all_hists, h1_vertex_Z);
+    appendVector(all_hists, h2_frag_beam_divergence);
     
     for(auto* h : all_hists)
         if(h) h->Write();
