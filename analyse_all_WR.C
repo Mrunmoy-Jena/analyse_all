@@ -179,7 +179,7 @@ void run_analysis(TString inputFile, TFile* outputFile)
     auto h1_califa_gamma_corr_25F_p2p_22O_mult_leq = CreateHistograms<TH1F>("h1_califa_gamma_corr_25F_p2p_22O_mult_leq", 10, 200, 0, 10);
     // 1D histograms counting gamma energies but only for events that produce at least one pair (i.e. multiplicity>=2)
     auto h1_califa_gamma_corr_25F_p2p_22O_mult_leq_pairs_only = CreateHistograms<TH1F>("h1_califa_gamma_corr_25F_p2p_22O_mult_leq_pairs_only", 10, 200, 0, 10);
-    auto h1_frag_beta = CreateHistograms<TH1F>("h1_frag_beta", 1, 200, 0, 1);
+    auto h1_frag_beta = CreateHistograms<TH1F>("h1_frag_beta", 1, 1000, 0.78, 0.84);
     auto h2_proton_cluster_energy_corr_25F_p2p_22O = CreateHistograms<TH2F>("h2_proton_cluster_energy_corr_25F_p2p_22O", 1, 400, 0, 400, 400, 0, 400);
     auto h2_gamma_theta_vs_proton1_theta_25F_p2p_22O = CreateHistograms<TH2F>("h2_gamma_theta_vs_proton1_theta_25F_p2p_22O", 1, 180, 0, 180, 180, 0, 180);
     auto h2_gamma_theta_vs_proton2_theta_25F_p2p_22O = CreateHistograms<TH2F>("h2_gamma_theta_vs_proton2_theta_25F_p2p_22O", 1, 180, 0, 180, 180, 0, 180);
