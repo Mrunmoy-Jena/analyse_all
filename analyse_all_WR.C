@@ -504,11 +504,11 @@ void run_analysis(TString inputFile, TFile* outputFile)
             auto califa_item = dynamic_cast<R3BCalifaClusterData*>(califa_data->At(j));
             if(is25F){
             
-	    if(califa_item->GetEnergy()>1000*20) //incoming 25F and cluster > 20 MeV, prefilter for p/n hits
+	    if(califa_item->GetEnergy()>1000*35) //incoming 25F and cluster > 35 MeV, prefilter for p/n hits
             {
                 califa_hits.push_back(califa_item);
             }
-            else if(califa_item->/*GetClusterType()==1*/GetEnergy()<1000*10) //gamma clusters
+            else if(califa_item->/*GetClusterType()==1*/GetEnergy()<1000*20) //gamma clusters
             {
                 califa_gammas.push_back(califa_item);
                 califa_e_g.push_back(califa_item->GetEnergy()/1000.);
@@ -561,7 +561,7 @@ void run_analysis(TString inputFile, TFile* outputFile)
             TVector3 gamma_dir;
             gamma_dir.SetMagThetaPhi(1.0, g->GetTheta(), g->GetPhi());
             const double theta_frag_gamma = gamma_dir.Angle(out_track_mom_unit); // [rad]
-            califa_e_g_corr.push_back(DopplerCorrectGammaEnergy(califa_e_g[ig], theta_frag_gamma, frag_beta));
+            califa_e_g_corr.push_back(DopplerCorrectGammaEnergy(califa_e_g[ig], theta_frag_gamma, frs_Beta));
         }
 	
 	int it_1 = (gRandom->Uniform(-1,1) > 0) ? 1 : 0;
