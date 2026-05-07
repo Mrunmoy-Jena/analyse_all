@@ -180,9 +180,24 @@ void run_analysis(TString inputFile, TFile* outputFile)
     // 1D histograms counting gamma energies but only for events that produce at least one pair (i.e. multiplicity>=2)
     auto h1_califa_gamma_corr_25F_p2p_22O_mult_leq_pairs_only = CreateHistograms<TH1F>("h1_califa_gamma_corr_25F_p2p_22O_mult_leq_pairs_only", 10, 200, 0, 10);
     auto h1_frag_beta = CreateHistograms<TH1F>("h1_frag_beta", 1, 1000, 0.78, 0.84);
+    auto h1_frs_beta  = CreateHistograms<TH1F>("h1_frs_beta",  1, 1000, 0.78, 0.84);
     auto h2_proton_cluster_energy_corr_25F_p2p_22O = CreateHistograms<TH2F>("h2_proton_cluster_energy_corr_25F_p2p_22O", 1, 400, 0, 400, 400, 0, 400);
     auto h2_gamma_theta_vs_proton1_theta_25F_p2p_22O = CreateHistograms<TH2F>("h2_gamma_theta_vs_proton1_theta_25F_p2p_22O", 1, 180, 0, 180, 180, 0, 180);
     auto h2_gamma_theta_vs_proton2_theta_25F_p2p_22O = CreateHistograms<TH2F>("h2_gamma_theta_vs_proton2_theta_25F_p2p_22O", 1, 180, 0, 180, 180, 0, 180);
+
+    // E_gamma (Doppler corrected) vs proton-proton opening angle for 25F(p,2p)22O.
+    // All gamma multiplicities and multiplicity <= 3 version for cleaner peak visibility.
+    auto h2_egamma_corr_vs_opang_25F_p2p_22O = CreateHistograms<TH2F>("h2_egamma_corr_vs_opang_25F_p2p_22O", 1,
+                                                                        180, 0., 180.,
+                                                                        200, 0., 10.);
+    h2_egamma_corr_vs_opang_25F_p2p_22O[0]->GetXaxis()->SetTitle("Proton-proton opening angle [deg]");
+    h2_egamma_corr_vs_opang_25F_p2p_22O[0]->GetYaxis()->SetTitle("Doppler-corrected E_{#gamma} [MeV]");
+
+    auto h2_egamma_corr_vs_opang_25F_p2p_22O_mleq3 = CreateHistograms<TH2F>("h2_egamma_corr_vs_opang_25F_p2p_22O_mleq3", 1,
+                                                                              180, 0., 180.,
+                                                                              200, 0., 10.);
+    h2_egamma_corr_vs_opang_25F_p2p_22O_mleq3[0]->GetXaxis()->SetTitle("Proton-proton opening angle [deg]");
+    h2_egamma_corr_vs_opang_25F_p2p_22O_mleq3[0]->GetYaxis()->SetTitle("Doppler-corrected E_{#gamma} [MeV] (M_{#gamma} #leq 3)");
     auto h1_gamma_gate_3199_corr_remaining_corr_25F_p2p_22O = CreateHistograms<TH1F>("h1_gamma_gate_3199_corr_remaining_corr_25F_p2p_22O", 1, 200, 0, 10);
     auto h1_gamma_gate_3199_corr_remaining_raw_25F_p2p_22O = CreateHistograms<TH1F>("h1_gamma_gate_3199_corr_remaining_raw_25F_p2p_22O", 1, 200, 0, 10);
     auto h1_gamma_gate_1383_corr_remaining_corr_25F_p2p_22O = CreateHistograms<TH1F>("h1_gamma_gate_1383_corr_remaining_corr_25F_p2p_22O", 1, 200, 0, 10);
@@ -213,8 +228,10 @@ void run_analysis(TString inputFile, TFile* outputFile)
     h1_gamma_gate_1383_corr_remaining_corr_25F_p2p_22O[0]->GetYaxis()->SetTitle("Counts");
     h1_gamma_gate_1383_corr_remaining_raw_25F_p2p_22O[0]->GetXaxis()->SetTitle("Uncorrected energy [MeV]");
     h1_gamma_gate_1383_corr_remaining_raw_25F_p2p_22O[0]->GetYaxis()->SetTitle("Counts");
-    h1_frag_beta[0]->GetXaxis()->SetTitle("Fragment beta");
+    h1_frag_beta[0]->GetXaxis()->SetTitle("Fragment beta (MDF)");
     h1_frag_beta[0]->GetYaxis()->SetTitle("Counts");
+    h1_frs_beta[0]->GetXaxis()->SetTitle("Incoming beta (FRS)");
+    h1_frs_beta[0]->GetYaxis()->SetTitle("Counts");
     auto h2_gamma_Epair_Meq2_25F_p2p_22O = CreateHistograms<TH2F>("h2_gamma_Epair_Meq2_25F_p2p_22O", 1, 400, 0, 4, 400, 0, 4);
     auto h2_gamma_Tpair_Meq2_25F_p2p_22O = CreateHistograms<TH2F>("h2_gamma_Tpair_Meq2_25F_p2p_22O", 1, 400, -200, 200, 400, -200, 200);
     auto h2_gamma_thetapair_Meq2_25F_p2p_22O = CreateHistograms<TH2F>("h2_gamma_thetapair_Meq2_25F_p2p_22O", 1, 180, 0, 180, 180, 0, 180);
@@ -482,6 +499,7 @@ void run_analysis(TString inputFile, TFile* outputFile)
         vector<double> califa_time_g;
         // record fragment beta for diagnostics
         h1_frag_beta[0]->Fill(frag_beta);
+        if(frs_Beta > 0. && frs_Beta < 1.) h1_frs_beta[0]->Fill(frs_Beta);
         vector<double> califa_e_g;
         vector<double> califa_e_g_corr;
 	vector<double> deltaphi_proton_gamma;  //phi difference between a gamma cluster and the proton
@@ -738,6 +756,9 @@ void run_analysis(TString inputFile, TFile* outputFile)
                     h1_califa_gamma_corr_25F_p2p_22O_allmult[0]->Fill(califa_e_g_corr[a]);
                     h2_gamma_theta_vs_proton1_theta_25F_p2p_22O[0]->Fill(califa_hits[0]->GetTheta()*TMath::RadToDeg(), califa_theta_g[a]);
                     h2_gamma_theta_vs_proton2_theta_25F_p2p_22O[0]->Fill(califa_hits[1]->GetTheta()*TMath::RadToDeg(), califa_theta_g[a]);
+                    h2_egamma_corr_vs_opang_25F_p2p_22O[0]->Fill(opang, califa_e_g_corr[a]);
+                    if(gammaMult <= 3)
+                        h2_egamma_corr_vs_opang_25F_p2p_22O_mleq3[0]->Fill(opang, califa_e_g_corr[a]);
                 }
 
                 for(size_t m = 1; m <= 10; ++m)
@@ -962,8 +983,8 @@ void run_analysis(TString inputFile, TFile* outputFile)
     appendVector(all_hists, h2_califa_gamma_corr_25F_ppn_24F);
     appendVector(all_hists, h2_califa_gamma_corr_25F_p2p_24O);
     appendVector(all_hists, h2_califa_gamma_corr_25F_p2p_23O);
-    appendVector(all_hists, h2_califa_gamma_corr_25F_p2p_22O);
-    appendVector(all_hists, h2_califa_gamma_corr_25F_p2p_22O_mleq3); 
+    appendVector(all_hists, h2_califa_gamma_corr_25F_p2p_22O); //E_gamma vs CALIFA theta, all multiplicities
+    appendVector(all_hists, h2_califa_gamma_corr_25F_p2p_22O_mleq3);  //E_Gamma vs CALIFA_theta, M <=3
     appendVector(all_hists, h1_califa_gamma_corr_all);
     appendVector(all_hists, h1_gamma_521_gated);
     appendVector(all_hists, h1_gamma_3118_gated);
@@ -990,6 +1011,8 @@ void run_analysis(TString inputFile, TFile* outputFile)
     appendVector(all_hists, h2_proton_cluster_energy_corr_25F_p2p_22O);
     appendVector(all_hists, h2_gamma_theta_vs_proton1_theta_25F_p2p_22O);
     appendVector(all_hists, h2_gamma_theta_vs_proton2_theta_25F_p2p_22O);
+    appendVector(all_hists, h2_egamma_corr_vs_opang_25F_p2p_22O);  //E_gamma vs CALIFA opening angle, all multiplicities
+    appendVector(all_hists, h2_egamma_corr_vs_opang_25F_p2p_22O_mleq3); //E_gamma vs CALIFA opening angle, M <= 3
     appendVector(all_hists, h1_gamma_gate_3199_corr_remaining_corr_25F_p2p_22O);
     appendVector(all_hists, h1_gamma_gate_3199_corr_remaining_raw_25F_p2p_22O);
     appendVector(all_hists, h1_gamma_gate_3199_corr_remaining_corr_25F_p2p_22O_mult_leq);
@@ -998,25 +1021,26 @@ void run_analysis(TString inputFile, TFile* outputFile)
     appendVector(all_hists, h1_gamma_gate_1383_corr_remaining_raw_25F_p2p_22O);
     appendVector(all_hists, h1_gamma_gate_1383_corr_remaining_corr_25F_p2p_22O_mult_leq);
     appendVector(all_hists, h1_gamma_gate_1383_corr_remaining_raw_25F_p2p_22O_mult_leq);
-    appendVector(all_hists, h1_frag_beta);
-    appendVector(all_hists, h2_gamma_Epair_Meq2_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_Tpair_Meq2_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_thetapair_Meq2_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_phipair_Meq2_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_Epair_Mleq2_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_Tpair_Mleq2_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_Epair_Mleq3_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_Tpair_Mleq3_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_thetapair_Mleq3_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_phipair_Mleq3_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_Epair_Mleq4_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_Tpair_Mleq4_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_thetapair_Mleq4_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_phipair_Mleq4_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_Epair_Mleq5_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_Tpair_Mleq5_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_thetapair_Mleq5_25F_p2p_22O);
-    appendVector(all_hists, h2_gamma_phipair_Mleq5_25F_p2p_22O);
+    appendVector(all_hists, h1_frag_beta); //fragment beta distribution
+    appendVector(all_hists, h1_frs_beta);  //frs beta distribution
+   // appendVector(all_hists, h2_gamma_Epair_Meq2_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_Tpair_Meq2_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_thetapair_Meq2_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_phipair_Meq2_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_Epair_Mleq2_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_Tpair_Mleq2_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_Epair_Mleq3_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_Tpair_Mleq3_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_thetapair_Mleq3_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_phipair_Mleq3_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_Epair_Mleq4_25F_p2p_22O);
+  //  appendVector(all_hists, h2_gamma_Tpair_Mleq4_25F_p2p_22O);
+   // appendVector(all_hists, h2_gamma_thetapair_Mleq4_25F_p2p_22O);
+   // appendVector(all_hists, h2_gamma_phipair_Mleq4_25F_p2p_22O);
+   // appendVector(all_hists, h2_gamma_Epair_Mleq5_25F_p2p_22O);
+   // appendVector(all_hists, h2_gamma_Tpair_Mleq5_25F_p2p_22O);
+   // appendVector(all_hists, h2_gamma_thetapair_Mleq5_25F_p2p_22O);
+   // appendVector(all_hists, h2_gamma_phipair_Mleq5_25F_p2p_22O);
     appendVector(all_hists, h1_DCA);
     appendVector(all_hists, h1_vertex_Z);
     appendVector(all_hists, h2_frag_beam_divergence);
