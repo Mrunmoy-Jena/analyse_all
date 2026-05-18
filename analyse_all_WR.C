@@ -1092,7 +1092,7 @@ int main(int argc, char** argv)
    	 std::cerr << "ERROR: Cannot create output file: " << outFile << std::endl;
    	 return 1;
 	}
-	const TString inputdir = "/lustre/r3b/mjena/G249/rootfiles/ts_4mus/with_randomization/";
+	const TString inputdir = "/lustre/r3b/mjena/G249/rootfiles/ts_4mus/5cmshift/";
 
 	//Redefine root file name to include path to .root directory
 	TString inputfilename = inputdir + "/" + filename;

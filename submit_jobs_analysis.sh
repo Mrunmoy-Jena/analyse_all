@@ -9,7 +9,7 @@ mkdir -p /lustre/r3b/mjena/G249/rootfiles/logs/output
 mkdir -p /lustre/r3b/mjena/G249/rootfiles/logs/errors
 
 # Count all root files starting with main*
-FILES=($(find "$OUTROOTPATH" -type f -name 'main*.root' -printf "%f\n" | sort))
+FILES=($(find "$OUTROOTPATH/../5cmshift" -type f -name 'main*.root' -printf "%f\n" | sort))
 FILE_COUNT=${#FILES[@]}
 
 if [ "$FILE_COUNT" -eq 0 ]; then

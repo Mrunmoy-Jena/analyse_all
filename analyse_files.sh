@@ -3,7 +3,7 @@
 #SBATCH --time=2:00:00
 #SBATCH --mem=6G
 #SBATCH --cpus-per-task=1
-#SBATCH --partition=highmem
+#SBATCH --partition=main
 #SBATCH --output=/lustre/r3b/mjena/G249/rootfiles/logs/output/temp_%A_%a.out
 #SBATCH --error=/lustre/r3b/mjena/G249/rootfiles/logs/errors/temp_%A_%a.err
 
